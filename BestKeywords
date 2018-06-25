@@ -32,7 +32,7 @@ AdWords_Best_Keywords = function(AdGroup.Keywords){
   report = report[!grepl(pattern = ',', x = report$Keyword),]
   
   #find out the total spent
-  cost.column = which(colnames(report) == 'Cost')
+  cost.column = colnames(report) == 'Cost'
   last.line = nrow(report)
   total.cost = report[last.line,cost.column]
   total.cost = as.character(total.cost)
@@ -40,9 +40,9 @@ AdWords_Best_Keywords = function(AdGroup.Keywords){
   total.cost = gsub(pattern = ',', replacement = '', x = total.cost)
   total.cost = as.numeric(total.cost)
   
-  #eliminate the % in bounce rate and CTR 
+  #eliminate the % in bounce rate and CTR
   #find which column contains is bounce rate column
-  bounce.rate.column = which(colnames(report) == "Bounce.rate")
+  bounce.rate.column = colnames(report) == "Bounce.rate"
   
   #convert bounce rate column to character
   report[,bounce.rate.column] = as.character(report[,bounce.rate.column])
@@ -51,7 +51,7 @@ AdWords_Best_Keywords = function(AdGroup.Keywords){
   report[,bounce.rate.column] = gsub(pattern = '%', replacement = '', x = report[,bounce.rate.column])
   
   #find which column contains is CTR column
-  CTR.rate.column = which(colnames(report) == "CTR")
+  CTR.rate.column = colnames(report) == "CTR"
   
   #convert CTR column to character
   report[,CTR.rate.column] = as.character(report[,CTR.rate.column])
@@ -62,7 +62,7 @@ AdWords_Best_Keywords = function(AdGroup.Keywords){
   #transform pages per session column to character
   report$Pages...session = as.character(report$Pages...session)
   
-  #isolate keywords with 0 impressions
+  #isolate keywords with 0 clicks
   report.no.impr.no.clicks = report[report$Clicks == '0',]
   report = report[!report$Clicks == '0',]
   
@@ -79,8 +79,8 @@ AdWords_Best_Keywords = function(AdGroup.Keywords){
   pages.per.session.true = report$Pages...session > pages.per.session.acceptable
   
   
-  good.lines = which(CTR.true == 'TRUE' & bounce.rate.true == 'TRUE' & 
-                      pages.per.session.true == 'TRUE')
+  good.lines = CTR.true == 'TRUE' & bounce.rate.true == 'TRUE' & 
+                      pages.per.session.true == 'TRUE'
   
   #create report with good lines
   report = report[good.lines,]
