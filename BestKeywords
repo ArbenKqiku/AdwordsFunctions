@@ -27,13 +27,6 @@ AdWords_Best_Keywords = function(AdGroup.Keywords){
   report = read.csv(AdGroup.Keywords, sep = ',', skip = 2, stringsAsFactors = FALSE, 
                     blank.lines.skip = TRUE, na.strings=c("","NA"), fileEncoding="UTF-8-BOM")
   
-#View(report[report$Campaign == 'Français' & report$CTR > 5,])
-  
-  #change column names
-  #column.names = as.character(as.matrix(report[1,]))
-  #colnames(report) = column.names
-  #report = report[-1,]
-  
   report$Keyword = as.character(report$Keyword)
   
   report = report[!grepl(pattern = ',', x = report$Keyword),]
