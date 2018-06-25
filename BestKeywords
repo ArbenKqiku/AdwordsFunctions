@@ -1,7 +1,7 @@
 # ** CALCULATE WHICH ARE THE GOOD KEYWORDS ** 
 
 #Instructions:
-  #export your adwords keyowrds' data to a .csv file
+  #export your adwords keyowrds' data to a .csv file and save it in a new folder
   #make sure there are no empty spaces 
   #as a result you'll get two reports in the folder of your choosing
 
@@ -125,18 +125,18 @@ AdWords_Best_Keywords = function(AdGroup.Keywords){
   report$Cost = gsub(pattern = ",", replacement = '', x = report$Cost) #for values higher than 1,000 AdWords uses commas
   report$Cost = as.numeric(report$Cost)
   
-  #calculate how much the bad keywords cost
+  #calculate how much the good keywords cost
   well.invested.money = sum(report$Cost)
   
-  #percentage of money wasted
+  #percentage of money well invested
   percentage.well.invested = well.invested.money/total.cost*100
   
-  #create table with bad weighted metrics
+  #create table with good weighted metrics
   summary.good.keywords = as.data.frame(matrix(ncol = 6, nrow = 1))
   colnames(summary.good.keywords) = c('Weighted-CTR','Weighted-Bounce-Rate', 'Weighted-Pages-Session', 'Well-Invested-Money','Total-Cost', 'Percentage-Well-Invested')
   summary.good.keywords[1,] = c(weighted.CTR, weighted.bounce.rate, weighted.Pages.Per.Session, well.invested.money, total.cost, percentage.well.invested)
   
-  #create summary of the bad keywords
+  #create summary of the good keywords
   list.of.files = list.files()
   
   eliminate.csv.name = gsub(pattern = '.csv', replacement = "", list.of.files[1])
@@ -144,7 +144,7 @@ AdWords_Best_Keywords = function(AdGroup.Keywords){
   
   write.table(x = summary.good.keywords, file = name.to.save, sep = ',', row.names = FALSE)
   
-  #create report of the problematic keywords
+  #create report of the good keywords
   name.to.save.2 = paste(eliminate.csv.name, ' good keywords.csv', sep = "")
   write.csv(x = report, file = name.to.save.2, sep = ',', row.names = FALSE, fileEncoding = 'UTF-8')
   
