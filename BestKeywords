@@ -151,6 +151,6 @@ AdWords_Best_Keywords = function(AdGroup.Keywords){
 }
 
 
-#---------------ADD YOUUR CSV FILE TO THE FUNCTION---------------------------
+#---------------ADD YOUR CSV FILE TO THE FUNCTION---------------------------
 
 AdWords_Best_Keywords('All Campaigns.csv')
