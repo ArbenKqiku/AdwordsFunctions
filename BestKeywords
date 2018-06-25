@@ -1,0 +1,163 @@
+# ** CALCULATE WHICH ARE THE GOOD KEYWORDS ** 
+
+#Instructions:
+  #export your adwords keyowrds' data to a .csv file
+  #make sure there are no empty spaces 
+  #as a result you'll get two reports in the folder of your choosing
+
+#define the location of you files
+setwd('/Users/arbenkqiku/Desktop/Freelancing/SCI/Campaigns/All Campaigns/')
+
+#-------------------------RUN THIS FUNCTION---------------------------------------
+
+AdWords_Best_Keywords = function(AdGroup.Keywords){
+  
+  #arg: the filename of an AdGroup Keywords table
+  
+  #description: creates a report of the keywords that have either a bounce rate lower than 70%,
+  #or a CTR higher than 5%, or more than 2 pageviews You can change
+  #these parameters here just below in order to suit your personal needs.
+  
+  #define when a metric is acceptable
+  bounce.rate.acceptable = 70
+  CTR.acceptable = 5
+  pages.per.session.acceptable = 2
+  
+  #read keywords report
+  report = read.csv(AdGroup.Keywords, sep = ',', skip = 2, stringsAsFactors = FALSE, 
+                    blank.lines.skip = TRUE, na.strings=c("","NA"), fileEncoding="UTF-8-BOM")
+  
+#View(report[report$Campaign == 'Français' & report$CTR > 5,])
+  
+  #change column names
+  #column.names = as.character(as.matrix(report[1,]))
+  #colnames(report) = column.names
+  #report = report[-1,]
+  
+  report$Keyword = as.character(report$Keyword)
+  
+  report = report[!grepl(pattern = ',', x = report$Keyword),]
+  
+  #find out the total spent
+  cost.column = which(colnames(report) == 'Cost')
+  last.line = nrow(report)
+  total.cost = report[last.line,cost.column]
+  total.cost = as.character(total.cost)
+  total.cost = gsub(pattern = "\\$", replacement = '', x = total.cost)
+  total.cost = gsub(pattern = ',', replacement = '', x = total.cost)
+  total.cost = as.numeric(total.cost)
+  
+  #eliminate the % in bounce rate and CTR 
+  #find which column contains is bounce rate column
+  bounce.rate.column = which(colnames(report) == "Bounce.rate")
+  
+  #convert bounce rate column to character
+  report[,bounce.rate.column] = as.character(report[,bounce.rate.column])
+  
+  #eliminate the % sign from the bounce rate column
+  report[,bounce.rate.column] = gsub(pattern = '%', replacement = '', x = report[,bounce.rate.column])
+  
+  #find which column contains is CTR column
+  CTR.rate.column = which(colnames(report) == "CTR")
+  
+  #convert CTR column to character
+  report[,CTR.rate.column] = as.character(report[,CTR.rate.column])
+  
+  #eliminate the % sign from the bounce rate column
+  report[,CTR.rate.column] = gsub(pattern = '%', replacement = '', x = report[,CTR.rate.column])
+  
+  #transform pages per session column to character
+  report$Pages...session = as.character(report$Pages...session)
+  
+  #isolate keywords with 0 impressions
+  report.no.impr.no.clicks = report[report$Clicks == '0',]
+  report = report[!report$Clicks == '0',]
+  
+  #Transform quality scores, pages per sessions in numbers, CTR, and bounce rate
+  report$Quality.Score = as.numeric(as.character(report$Quality.Score))
+  report$Pages...session = as.numeric(as.character(report$Pages...session))
+  report$CTR = as.numeric(as.character(report$CTR))
+  report$Bounce.rate = as.numeric(as.character(report$Bounce.rate))
+  
+  #Understand which are the lines that are problematic in terms of high bounce rate,
+  #low CTR, low QS, and low pages per session
+  bounce.rate.true = report$Bounce.rate < bounce.rate.acceptable
+  CTR.true = report$CTR > CTR.acceptable | is.na(report$CTR)
+  pages.per.session.true = report$Pages...session > pages.per.session.acceptable
+  
+  
+  good.lines = which(CTR.true == 'TRUE' & bounce.rate.true == 'TRUE' & 
+                      pages.per.session.true == 'TRUE')
+  
+  #create report with problematic lines
+  report = report[good.lines,]
+  
+  #at the "all campaigns level" eliminate the last 3 lines, at the "single campaign level"
+  #eliminate the last 2 lines.
+  if(grepl(pattern = 'Search', x = report$Keyword.status[nrow(report)])){
+    nrow.report = nrow(report)
+    nrow.to.eliminate = c(nrow.report-2,nrow.report-1, nrow.report)
+    report = report[-nrow.to.eliminate,]
+  }else{
+    nrow.report = nrow(report)
+    nrow.to.eliminate = c(nrow.report-1, nrow.report)
+    report = report[-nrow.to.eliminate,]
+  }
+  
+  #calculate weighted CTR
+  report$Impr. = as.numeric(as.character(report$Impr.))
+  CTR.times.impressions = report$CTR*report$Impr.
+  report$CTR.impressions = CTR.times.impressions
+  
+  weighted.CTR = sum(report$CTR.impressions[!is.na(report$CTR.impressions)])/
+    sum(report$Impr.[!is.na(report$Impr.)])
+  
+  #calculate weighted Pages per Sessions
+  pages.per.sessions.times.impressions = report$Pages...session*report$Impr.
+  report$pages.per.sessions.times.impressions = pages.per.sessions.times.impressions
+  
+  weighted.Pages.Per.Session = sum(report$pages.per.sessions.times.impressions[!is.na(report$pages.per.sessions.times.impressions)])/
+    sum(report$Impr.[!is.na(report$Impr.)])
+  
+  #calculate weighted bounce rate
+  bounce.rate.times.impressions = report$Bounce.rate*report$Impr.
+  report$bounce.rate.times.impressions = bounce.rate.times.impressions
+  
+  weighted.bounce.rate = sum(report$bounce.rate.times.impressions[!is.na(report$bounce.rate.times.impressions)])/
+    sum(report$Impr.[!is.na(report$Impr.)])
+  
+  #eliminate that $ sing in the cost
+  report$Cost = as.character(report$Cost)
+  report$Cost = gsub(pattern = "\\$", replacement = '', x = report$Cost)
+  report$Cost = gsub(pattern = ",", replacement = '', x = report$Cost) #for values higher than 1,000 AdWords uses commas
+  report$Cost = as.numeric(report$Cost)
+  
+  #calculate how much the bad keywords cost
+  well.invested.money = sum(report$Cost)
+  
+  #percentage of money wasted
+  percentage.well.invested = well.invested.money/total.cost*100
+  
+  #create table with bad weighted metrics
+  summary.good.keywords = as.data.frame(matrix(ncol = 6, nrow = 1))
+  colnames(summary.good.keywords) = c('Weighted-CTR','Weighted-Bounce-Rate', 'Weighted-Pages-Session', 'Well-Invested-Money','Total-Cost', 'Percentage-Well-Invested')
+  summary.good.keywords[1,] = c(weighted.CTR, weighted.bounce.rate, weighted.Pages.Per.Session, well.invested.money, total.cost, percentage.well.invested)
+  
+  #create summary of the bad keywords
+  list.of.files = list.files()
+  
+  eliminate.csv.name = gsub(pattern = '.csv', replacement = "", list.of.files[1])
+  name.to.save = paste(eliminate.csv.name, ' summary good keywords.csv', sep = "")
+  
+  write.table(x = summary.good.keywords, file = name.to.save, sep = ',', row.names = FALSE)
+  
+  #create report of the problematic keywords
+  name.to.save.2 = paste(eliminate.csv.name, ' good keywords.csv', sep = "")
+  write.csv(x = report, file = name.to.save.2, sep = ',', row.names = FALSE, fileEncoding = 'UTF-8')
+  
+}
+
+
+#---------------ADD YOUUR CSV FILE TO THE FUNCTION---------------------------
+
+AdWords_Best_Keywords('All Campaigns.csv')
