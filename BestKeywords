@@ -72,8 +72,8 @@ AdWords_Best_Keywords = function(AdGroup.Keywords){
   report$CTR = as.numeric(as.character(report$CTR))
   report$Bounce.rate = as.numeric(as.character(report$Bounce.rate))
   
-  #Understand which are the lines that are problematic in terms of high bounce rate,
-  #low CTR, low QS, and low pages per session
+  #Understand which are the lines that are good in terms of low bounce rate,
+  #high CTR, high pages per session
   bounce.rate.true = report$Bounce.rate < bounce.rate.acceptable
   CTR.true = report$CTR > CTR.acceptable | is.na(report$CTR)
   pages.per.session.true = report$Pages...session > pages.per.session.acceptable
@@ -82,7 +82,7 @@ AdWords_Best_Keywords = function(AdGroup.Keywords){
   good.lines = which(CTR.true == 'TRUE' & bounce.rate.true == 'TRUE' & 
                       pages.per.session.true == 'TRUE')
   
-  #create report with problematic lines
+  #create report with good lines
   report = report[good.lines,]
   
   #at the "all campaigns level" eliminate the last 3 lines, at the "single campaign level"
